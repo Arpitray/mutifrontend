@@ -1,0 +1,371 @@
+﻿"use client";
+
+import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+/* ASCII Logo */
+const ASCII_LOGO = `
+    ___   ___      ___  ___  ____  ___   ___  ___  ____
+   / _ | / _ |    / _ \\/ __/ / __/ / _ \\/ _ \\/ _ |/ __/
+  / __ |/ __ |   / , _/ _/  _\\ \\  / // / // / __ / /__ 
+ /_/ |_/_/ |_|  /_/|_/___/ /___/ /____/\\___/_/ |_\\___/ 
+                                                       
+`;
+
+const LOADING_STEPS = [
+  "INIT research_pipeline...",
+  "$ web_search --query <topic>",
+  "$ scrape_url --depth=full",
+  "$ synthesize_findings.py",
+  "$ generate_markdown_report.py",
+  "$ critique_output --quality=max",
+  "$ finalize_response --format=md",
+];
+
+export default function Home() {
+  const [topic, setTopic] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("report");
+
+  useEffect(() => {
+    let interval;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
+      }, 7000);
+    } else {
+      setLoadingStep(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!topic.trim()) return;
+
+    setIsLoading(true);
+    setError(null);
+    setResults(null);
+    setLoadingStep(0);
+    setActiveTab("report");
+
+    try {
+      const response = await fetch("/api/research", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ topic }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setResults(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to conduct research. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col p-4 md:p-6">
+      <main className="max-w-4xl mx-auto w-full font-mono">
+        {/* Header */}
+        <header className="mb-8 mt-4">
+          <div className="terminal-window">
+            <div className="terminal-title-bar">
+              <span>+--- AI RESEARCH AGENT v2.0.1 ---+</span>
+              <span>[*]</span>
+            </div>
+            <div className="terminal-content">
+              <pre className="text-[var(--accent)] font-bold mb-4 leading-tight text-xs md:text-sm">
+                {ASCII_LOGO}
+              </pre>
+              <h1 className="text-xl md:text-2xl font-bold mb-3 uppercase tracking-wide typing-animation">
+                <span className="prompt-symbol">$</span> ./AGENTS_ORCHESTRATOR.SH
+              </h1>
+              <div className="divider-horizontal">========================================================</div>
+              <p className="mb-2 text-sm text-[var(--fg)]">
+                 System initialized. Running distributed research swarm...
+              </p>
+              <p className="text-xs status-muted">
+                 Awaiting operator input payload. <span className="cursor"></span>
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {/* Search Form */}
+        <form onSubmit={handleSubmit} className="mb-6">
+          <div className="terminal-window">
+            <div className="terminal-title-bar">
+              <span>+--- INPUT_STREAM ---+</span>
+            </div>
+            <div className="terminal-content">
+              <div className="mb-3 flex items-center font-mono">
+                <span className="prompt-symbol font-bold mr-2 text-[var(--fg-secondary)]">operator@acme:~$</span>
+                <div className="flex-grow flex items-center bg-transparent relative">
+                  <input
+                    type="text"
+                    className="w-full bg-transparent border-none p-0 outline-none focus:outline-none shadow-none focus:ring-0 focus:border-transparent min-w-0 !bg-transparent !shadow-none"
+                    style={{ caretColor: 'transparent' }}
+                    placeholder="[enter query payload...]"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    disabled={isLoading}
+                    autoFocus
+                  />
+                  <span className="absolute w-[8px] h-[1em] bg-[var(--fg)] animate-[cursor-blink_1s_infinite] pointer-events-none" style={{ left: `calc(${topic.length}ch + 1px)` }}></span>
+                </div>
+              </div>
+              <div className="flex gap-4 mt-6">
+                <button
+                  type="submit"
+                  disabled={isLoading || !topic.trim()}
+                  className="btn-terminal !bg-transparent !border-0 hover:!bg-[var(--fg)] hover:text-[var(--bg)] !px-0"
+                >
+                  <span className="hover:text-[var(--bg)]">[ INITIATE ]</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTopic("")}
+                  className="btn-terminal !bg-transparent !border-0 text-[var(--fg-muted)] hover:!bg-[var(--fg)] hover:text-[var(--bg)] !px-0"
+                >
+                  <span className="hover:text-[var(--bg)]">[ ABORT ]</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 terminal-window">
+            <div className="terminal-title-bar bg-[var(--error)] text-[#000]">
+              <span>+--- SYSTEM PANIC ---+</span>
+            </div>
+            <div className="terminal-content">
+              <p className="status-error mb-3 font-bold">[!] FATAL: {error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="btn-terminal danger !px-1"
+              >
+                [ ACKNOWLEDGE ]
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="mb-6 terminal-window">
+            <div className="terminal-title-bar">
+              <span>+--- SYSTEM ACTIVE ---+</span>
+            </div>
+            <div className="terminal-content font-mono">
+              <div className="mb-4 text-[var(--fg)] animate-pulse">
+                [||||||||||.....] PROCESSING BATCH REQUEST
+              </div>
+              <div className="status-box mb-3">
+                <div className="text-[var(--fg-secondary)] mb-2 font-bold">&gt; Execution Trace:</div>
+                <p className="text-sm">
+                  <span className="text-[var(--fg-muted)]">~ </span>{LOADING_STEPS[loadingStep]}
+                </p>
+              </div>
+              <div className="text-xs status-muted">
+                Time Remaining: [ 30-60s ]
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Results Display */}
+        {results && !isLoading && (
+          <div className="space-y-4">
+            {/* Tab Selector */}
+            <div className="flex gap-0 flex-wrap border-b border-[var(--border)]">
+              <button
+                onClick={() => setActiveTab("report")}
+                className={`tab-button ${activeTab === "report" ? "active" : ""}`}
+              >
+                REPORT
+              </button>
+              <button
+                onClick={() => setActiveTab("critique")}
+                className={`tab-button ${activeTab === "critique" ? "active" : ""}`}
+              >
+                CRITIQUE
+              </button>
+              <button
+                onClick={() => setActiveTab("raw")}
+                className={`tab-button ${activeTab === "raw" ? "active" : ""}`}
+              >
+                RAW_DATA
+              </button>
+            </div>
+
+            {/* Report Tab */}
+            {activeTab === "report" && (
+              <div className="terminal-window">
+                <div className="terminal-title-bar">
+                  <span>+--- WRITER AGENT REPORT ---+</span>
+                </div>
+                <div className="terminal-content">
+                  <article className="prose prose-sm max-w-none text-xs leading-relaxed">
+                    <style>{`
+                      .prose h1, .prose h2, .prose h3, .prose h4 {
+                        font-family: "JetBrains Mono", monospace;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        letter-spacing: 0.1em;
+                        color: var(--fg);
+                        text-shadow: var(--text-glow);
+                        margin-top: 8px;
+                        margin-bottom: 6px;
+                      }
+                      .prose a {
+                        color: var(--fg);
+                        text-decoration: underline;
+                      }
+                      .prose a:visited {
+                        color: var(--fg-secondary);
+                      }
+                      .prose a:hover {
+                        color: var(--error);
+                      }
+                      .prose strong {
+                        font-weight: bold;
+                        color: var(--fg-secondary);
+                      }
+                      .prose em {
+                        font-style: italic;
+                      }
+                      .prose code {
+                        background-color: transparent;
+                        color: var(--fg-secondary);
+                        font-size: 11px;
+                      }
+                      .prose pre {
+                        background-color: var(--bg);
+                        border: 1px solid var(--border);
+                        padding: 8px;
+                        margin: 4px 0;
+                        font-size: 11px;
+                        overflow-x: auto;
+                      }
+                    `}</style>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {results.writer_result || "> No report generated."}
+                    </ReactMarkdown>
+                  </article>
+                </div>
+              </div>
+            )}
+
+            {/* Critique Tab */}
+            {activeTab === "critique" && (
+              <div className="terminal-window">
+                <div className="terminal-title-bar">
+                  <span>+--- CRITIC AGENT EVALUATION ---+</span>
+                </div>
+                <div className="terminal-content">
+                  <article className="prose prose-sm max-w-none text-xs leading-relaxed">
+                    <style>{`
+                      .prose h1, .prose h2, .prose h3, .prose h4 {
+                        font-family: "JetBrains Mono", monospace;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        letter-spacing: 0.1em;
+                        color: var(--fg-secondary);
+                        text-shadow: var(--text-glow);
+                        margin-top: 8px;
+                        margin-bottom: 6px;
+                      }
+                      .prose code {
+                        background-color: transparent;
+                        color: var(--fg-secondary);
+                        font-size: 11px;
+                      }
+                      .prose pre {
+                        background-color: var(--bg);
+                        border: 1px solid var(--border);
+                        padding: 8px;
+                        margin: 4px 0;
+                        font-size: 11px;
+                        overflow-x: auto;
+                      }
+                    `}</style>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {results.critic_result || "> No critique available."}
+                    </ReactMarkdown>
+                  </article>
+                </div>
+              </div>
+            )}
+
+            {/* Raw Data Tab */}
+            {activeTab === "raw" && (
+              <div className="space-y-4">
+                {/* Search Results */}
+                <div className="terminal-window">
+                  <div className="terminal-title-bar">
+                    <span>+--- SEARCH RESULTS ---+</span>
+                  </div>
+                  <div className="terminal-content">
+                    <pre className="text-xs bg-transparent border border-[var(--border)] p-2 h-64 overflow-y-auto whitespace-pre-wrap break-words">
+                      {results.search_result || "> No search results..."}
+                    </pre>
+                  </div>
+                </div>
+
+                {/* Scraped Content */}
+                <div className="terminal-window">
+                  <div className="terminal-title-bar">
+                    <span>+--- SCRAPED CONTENT ---+</span>
+                  </div>
+                  <div className="terminal-content">
+                    <pre className="text-xs bg-transparent border border-[var(--border)] p-2 h-80 overflow-y-auto whitespace-pre-wrap break-words">
+                      {results.reader_result || "> No content data..."}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-12 py-6">
+          <div className="divider mb-4">-----------------------------------------------------</div>
+          <p className="text-center text-xs text-[var(--fg-muted)] font-mono">
+            ACME OS v1.0.9 &copy; 1989. ALL RIGHTS RESERVED.
+          </p>
+          <p className="text-center text-xs text-[var(--fg-muted)] font-mono mt-1">
+            sys_admin: AI.agent &gt; EOF.
+          </p>
+        </footer>
+          <p className="text-center text-xs">
+            <a href="#" className="hover:text-[var(--error)]">
+              <span className="prompt-symbol">&gt;</span>GITHUB
+            </a>
+            {" • "}
+            <a href="#" className="hover:text-[var(--error)]">
+              <span className="prompt-symbol">&gt;</span>DOCS
+            </a>
+            {" • "}
+            <a href="#" className="hover:text-[var(--error)]">
+              <span className="prompt-symbol">&gt;</span>ISSUES
+            </a>
+          </p>
+      </main>
+    </div>
+  );
+}

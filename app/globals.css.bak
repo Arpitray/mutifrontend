@@ -1,0 +1,429 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+@import "tailwindcss";
+
+@layer base {
+  * {
+    border-radius: 0 !important;
+  }
+
+  html, body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    text-shadow: var(--text-glow);
+  }
+
+  :root {
+    --bg: #0a0a0a;
+    --fg: #33ff00;
+    --fg-secondary: #ffb000;
+    --fg-muted: #1f521f;
+    --accent: #33ff00;
+    --error: #ff3333;
+    --border: #1f521f;
+    --text-glow: 0 0 5px rgba(51, 255, 0, 0.5);
+  }
+
+  /* Scanlines CRT Overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(51, 255, 0, 0.03) 2px,
+      rgba(51, 255, 0, 0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: var(--text-glow);
+    line-height: 1.3;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    margin-top: 12px;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    margin-top: 10px;
+  }
+
+  a {
+    color: var(--fg);
+    text-decoration: underline;
+    cursor: pointer;
+    text-shadow: var(--text-glow);
+    transition: all 0.1s;
+    font-weight: bold;
+  }
+
+  a:visited {
+    color: var(--fg-secondary);
+  }
+
+  a:hover {
+    color: var(--error);
+    text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+  }
+
+  code, pre {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--fg);
+    background-color: var(--bg);
+    text-shadow: var(--text-glow);
+  }
+
+  code {
+    font-size: 12px;
+  }
+
+  pre {
+    border: 1px solid var(--border);
+    padding: 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+    font-size: 11px;
+  }
+}
+
+@layer components {
+  /* Terminal Buttons */
+  .btn-terminal {
+    background-color: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    user-select: none;
+    transition: all 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-shadow: var(--text-glow);
+    position: relative;
+    display: inline-block;
+  }
+
+  .btn-terminal::before {
+    content: "[";
+    margin-right: 4px;
+  }
+
+  .btn-terminal::after {
+    content: "]";
+    margin-left: 4px;
+  }
+
+  .btn-terminal:hover:not(:disabled) {
+    background-color: var(--fg);
+    color: var(--bg);
+    text-shadow: none;
+  }
+
+  .btn-terminal:active:not(:disabled) {
+    transform: translate(1px, 1px);
+  }
+
+  .btn-terminal:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: var(--fg-muted);
+  }
+
+  .btn-terminal.danger {
+    color: var(--error);
+  }
+
+  .btn-terminal.danger:hover {
+    background-color: var(--error);
+    color: var(--bg);
+  }
+
+  /* Terminal Cards/Windows */
+  .terminal-window {
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .terminal-title-bar {
+    background-color: var(--fg-muted);
+    color: var(--fg);
+    padding: 4px 8px;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-shadow: var(--text-glow);
+    border-bottom: 1px solid var(--border);
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .terminal-content {
+    padding: 12px;
+    min-height: 60px;
+  }
+
+  /* Terminal Inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    background-color: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    text-shadow: var(--text-glow);
+    caret-color: var(--fg);
+    width: 100%;
+  }
+
+  input[type="text"]::placeholder,
+  textarea::placeholder {
+    color: var(--fg-muted);
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: 1px solid var(--border);
+    outline-offset: -2px;
+    box-shadow: inset 0 0 5px rgba(51, 255, 0, 0.2);
+  }
+
+  /* Status Indicators */
+  .status-ok {
+    color: var(--fg);
+    text-shadow: var(--text-glow);
+    font-weight: bold;
+  }
+
+  .status-error {
+    color: var(--error);
+    text-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+    font-weight: bold;
+  }
+
+  .status-warning {
+    color: var(--fg-secondary);
+    text-shadow: 0 0 5px rgba(255, 176, 0, 0.5);
+    font-weight: bold;
+  }
+
+  .status-muted {
+    color: var(--fg-muted);
+    text-shadow: none;
+  }
+
+  /* Tab buttons */
+  .tab-button {
+    background-color: var(--bg);
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 6px 12px;
+    margin-right: 2px;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    transition: all 0.1s;
+    text-shadow: var(--text-glow);
+    display: inline-block;
+    letter-spacing: 0.05em;
+  }
+
+  .tab-button:hover {
+    color: var(--fg);
+    border-color: var(--fg-muted);
+  }
+
+  .tab-button.active {
+    background-color: var(--fg-muted);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    text-shadow: var(--text-glow);
+    font-weight: bold;
+  }
+
+  /* Prompt-style text */
+  .prompt {
+    color: var(--fg);
+    text-shadow: var(--text-glow);
+    font-family: "JetBrains Mono", monospace;
+    font-weight: bold;
+  }
+
+  .prompt-symbol {
+    color: var(--fg-secondary);
+    margin-right: 4px;
+  }
+
+  /* Status box */
+  .status-box {
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+    padding: 8px;
+    margin: 8px 0;
+    font-size: 12px;
+  }
+
+  /* Typography overrides */
+  .text-mono {
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .text-uppercase {
+    text-transform: uppercase;
+  }
+
+  .text-glow {
+    text-shadow: var(--text-glow);
+  }
+}
+
+@layer utilities {
+  /* Terminal Cursor Blink */
+  @keyframes cursor-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    background-color: var(--fg);
+    animation: cursor-blink 1s infinite;
+    margin-left: 2px;
+  }
+
+  /* Animations */
+  @keyframes typing {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  .typing-animation {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typing 3s steps(50, end), cursor-blink 1s infinite 3s;
+    text-shadow: var(--text-glow);
+    font-weight: bold;
+  }
+
+  @keyframes glitch {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(-2px, 2px);
+    }
+    40% {
+      transform: translate(-2px, -2px);
+    }
+    60% {
+      transform: translate(2px, 2px);
+    }
+    80% {
+      transform: translate(2px, -2px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+
+  .glitch-text {
+    animation: glitch 0.3s;
+    display: inline-block;
+  }
+
+  .glitch-text:hover {
+    animation: glitch 0.4s infinite;
+  }
+
+  /* Progress Bar */
+  .progress-bar {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    color: var(--fg);
+    text-shadow: var(--text-glow);
+    font-weight: bold;
+  }
+
+  .progress-bar-full {
+    color: var(--fg);
+  }
+
+  .progress-bar-empty {
+    color: var(--fg-muted);
+  }
+
+  /* ASCII Dividers */
+  .divider {
+    color: var(--border);
+    text-align: center;
+    margin: 16px 0;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-shadow: var(--text-glow);
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  .divider-horizontal {
+    color: var(--border);
+    display: block;
+    margin: 12px 0;
+    font-family: "JetBrains Mono", monospace;
+    letter-spacing: -0.05em;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
