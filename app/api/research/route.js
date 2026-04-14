@@ -13,7 +13,8 @@ export async function POST(req) {
 
     const startTime = Date.now();
     
-    const response = await fetch("http://127.0.0.1:8000/api/research", {
+    const baseUrl = process.env.API_URL || "https://multiagents-5oli.onrender.com";
+    const response = await fetch(`${baseUrl}/api/research`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
