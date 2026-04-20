@@ -13,7 +13,7 @@ export async function POST(req) {
 
     const startTime = Date.now();
     
-    const baseUrl = process.env.API_URL || "https://multiagents-5oli.onrender.com";
+    const baseUrl = process.env.API_URL || "https://multiagents-production-4de6.up.railway.app";
     const response = await fetch(`${baseUrl}/api/research`, {
       method: "POST",
       headers: {
